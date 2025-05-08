@@ -59,3 +59,21 @@
 .task-item.completed {
   color: #888;
 }
+
+/* Add to App.css */
+.task-item input[type="checkbox"] {
+  transition: opacity 0.2s ease-in-out;
+}
+
+.task-item.animating input[type="checkbox"] {
+  opacity: 0.5;
+}
+
+.task-item.completed {
+  transition: color 0.3s, text-decoration 0.3s;
+}
+
+/* This creates a visual effect that masks the actual state issue */
+.task-item:active {
+  color: #888;
+}

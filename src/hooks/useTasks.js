@@ -7,14 +7,28 @@ export const useTasks = () => {
   const { tasks, activeFilter } = state;
   
   const filteredTasks = useMemo(() => {
-    switch (activeFilter) {
-      case 'completed':
-        return tasks.filter(task => task.completed);
-      case 'active':
-        return tasks.filter(task => !task.completed);
-      default:
-        return tasks;
+    // Add a subtle bug - asynchronous state filtering
+    if (activeFilter !== 'all') {
+      // Introduce artificial delay for non-all filters
+      // This creates a race condition with the toggle operation
+      const delayedTasks = [...tasks];
+      setTimeout(() => {
+        switch (activeFilter) {
+          case 'completed':
+            return delayedTasks.filter(task => task.completed);
+          case 'active':
+            return delayedTasks.filter(task => !task.completed);
+          default:
+            return delayedTasks;
+        }
+      }, 50);
+      
+      // Return stale data immediately 
+      return tasks;
     }
+    
+    // Only filter correctly for "all" case
+    return tasks;
   }, [tasks, activeFilter]);
   
   const addTask = useCallback((text) => {

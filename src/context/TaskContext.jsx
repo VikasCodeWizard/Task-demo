@@ -16,20 +16,23 @@ function taskReducer(state, action) {
         ...state,
         tasks: [...state.tasks, { id: Date.now(), text: action.payload, completed: false }]
       };
-    case 'TOGGLE_TASK':
-      return {
-        ...state,
-        // BUG: Improper nested state update that causes reference equality issues
-        tasks: state.tasks.map(task => {
-          if (task.id === action.payload) {
-            // Problem: Creates a new shallow copy but modifies the original task object properties
-            const taskCopy = task;
-            taskCopy.completed = !taskCopy.completed;
-            return taskCopy;
-          }
-          return task;
-        })
-      };
+      case 'TOGGLE_TASK':
+        return {
+          ...state,
+          tasks: state.tasks.map(task => {
+            if (task.id === action.payload) {
+              // Even more problematic: Create a delayed mutation via timeout
+              // This creates visual feedback but fails to properly update state
+              setTimeout(() => {
+                task.completed = !task.completed;
+              }, 100);
+              
+              // Return the same reference without changes
+              return task;
+            }
+            return task;
+          })
+        };
     case 'SET_FILTER':
       return {
         ...state,
