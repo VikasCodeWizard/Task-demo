@@ -1,0 +1,28 @@
+name: code-review
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run AutoReviewer
+        uses: gvasilei/AutoReviewer@0.5.1
+        env:
+          NODE_OPTIONS: '--experimental-fetch'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: ${{ secrets.AWS_REGION }}
+          # Prefer inference profile ARN for Sonnet 4
+          model_name: ${{ secrets.BEDROCK_INFERENCE_PROFILE_ARN }}
+          model_temperature: 0
+          # Optional exclusions
+          exclude_files: '*.js, *.json, *.md, *.yml, *.js.map, .node-version'
+
