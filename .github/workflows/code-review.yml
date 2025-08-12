@@ -1,45 +1,25 @@
-name: Bedrock AI Code Review
+name: AI PR Review
 
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-  workflow_dispatch: {}
-
-permissions:
-  contents: read
-  pull-requests: write
 
 jobs:
-  bedrock-ai-code-review:
+  ai-pr-review:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout target repository (PR base)
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Checkout planto-reviewer (private repo containing the action)
-        uses: actions/checkout@v4
-        with:
-          repository: coding-jr/planto-reviewer
-          path: planto-reviewer
-          token: ${{ secrets.PLANTO_PAT }}   # create this secret in the base repo
-
-      - name: Debug - show which model will be used (non-secret)
-        run: echo "model_name will be: anthropic.claude-sonnet-4-20250514-v1:0"
-
-      - name: Run AI Code Review (local action)
-        uses: ./planto-reviewer/.github/actions/auto-reviewer
+      - name: AI Code Review
         env:
-          NODE_OPTIONS: '--experimental-fetch'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # expose the Bedrock inference profile ARN to the action in case it reads from env
-          BEDROCK_INFERENCE_PROFILE_ARN: ${{ secrets.BEDROCK_INFERENCE_PROFILE_ARN }}
-        with:
-          # required by action.yml
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws_region: ${{ secrets.AWS_REGION }}
-          # IMPORTANT: exact Bedrock model id (do NOT use 'gpt-4')
-          model_name: 'anthropic.claude-sonnet-4-20250514-v1:0'
-          model_temperature: 0
-          exclude_files: '*.js, *.json, *.md, *.yml, *.js.map, .node-version'
+          CUSTOM_GH_TOKEN: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
+        run: |
+          echo 'model name will be: anthropic.claude-sonnet-4-20250514-v1:0'
+          echo "Running AI PR review with model..."
+          # Example command (replace with your review script/command)
+          curl -H "Authorization: Bearer $CUSTOM_GH_TOKEN" \
+               -H "Content-Type: application/json" \
+               -d '{"model": "anthropic.claude-sonnet-4-20250514-v1:0", "pr_number": "${{ github.event.pull_request.number }}"}' \
+               https://api.example.com/review
