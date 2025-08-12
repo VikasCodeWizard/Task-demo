@@ -1,0 +1,25 @@
+name: AI PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  ai-pr-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: AI Code Review
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CUSTOM_GH_TOKEN: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
+        run: |
+          echo 'model name will be: anthropic.claude-sonnet-4-20250514-v1:0'
+          echo "Running AI PR review with model..."
+          # Example command (replace with your review script/command)
+          curl -H "Authorization: Bearer $CUSTOM_GH_TOKEN" \
+               -H "Content-Type: application/json" \
+               -d '{"model": "anthropic.claude-sonnet-4-20250514-v1:0", "pr_number": "${{ github.event.pull_request.number }}"}' \
+               https://api.example.com/review
