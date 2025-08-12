@@ -13,29 +13,33 @@ jobs:
   bedrock-ai-code-review:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout target repository (the PR repo)
+      - name: Checkout target repository (PR base)
         uses: actions/checkout@v4
 
-      - name: Checkout planto-reviewer (private repo with action)
+      - name: Checkout planto-reviewer (private repo containing the action)
         uses: actions/checkout@v4
         with:
           repository: coding-jr/planto-reviewer
-          # path to place repo in workspace
           path: planto-reviewer
-          # token with read access to the private repo (store this as a secret)
-          token: ${{ secrets.PLANTO_PAT }}
+          token: ${{ secrets.PLANTO_PAT }}   # create this secret in the base repo
 
-      - name: Run AI Code Review (local action from planto repo)
-        # point to the action folder inside the checkout above
+      - name: Debug - show which model will be used (non-secret)
+        run: echo "model_name will be: anthropic.claude-sonnet-4-20250514-v1:0"
+
+      - name: Run AI Code Review (local action)
         uses: ./planto-reviewer/.github/actions/auto-reviewer
         env:
-          NODE_OPTIONS: "--experimental-fetch"
+          NODE_OPTIONS: '--experimental-fetch'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # expose the Bedrock inference profile ARN to the action in case it reads from env
+          BEDROCK_INFERENCE_PROFILE_ARN: ${{ secrets.BEDROCK_INFERENCE_PROFILE_ARN }}
         with:
+          # required by action.yml
           github_token: ${{ secrets.GITHUB_TOKEN }}
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_region: ${{ secrets.AWS_REGION }}
+          # IMPORTANT: exact Bedrock model id (do NOT use 'gpt-4')
+          model_name: 'anthropic.claude-sonnet-4-20250514-v1:0'
           model_temperature: 0
-          model_name: "gpt-4"
-          exclude_files: "*.js, *.json, *.md, *.yml, *.js.map, .node-version"
+          exclude_files: '*.js, *.json, *.md, *.yml, *.js.map, .node-version'
