@@ -4,6 +4,10 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   ai-pr-review:
     runs-on: ubuntu-latest
@@ -11,15 +15,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: AI Code Review
+      - name: AI Code Review (Bedrock Claude Sonnet)
+        uses: gvasilei/AutoReviewer@main
         env:
+          NODE_OPTIONS: '--experimental-fetch'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CUSTOM_GH_TOKEN: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
-        run: |
-          echo 'model name will be: anthropic.claude-sonnet-4-20250514-v1:0'
-          echo "Running AI PR review with model..."
-          # Example command (replace with your review script/command)
-          curl -H "Authorization: Bearer $CUSTOM_GH_TOKEN" \
-               -H "Content-Type: application/json" \
-               -d '{"model": "anthropic.claude-sonnet-4-20250514-v1:0", "pr_number": "${{ github.event.pull_request.number }}"}' \
-               https://api.example.com/review
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          BEDROCK_MODEL_ID: ${{ secrets.BEDROCK_MODEL_ID }}
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: ${{ secrets.AWS_REGION }}
+          model_temperature: 0
+          model_name: ${{ secrets.BEDROCK_MODEL_ID }}
+          exclude_files: '*.js, *.json, *.md, *.yml, *.js.map, .node-version'
