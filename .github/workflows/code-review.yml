@@ -1,28 +1,35 @@
-name: code-review
+name: Bedrock AI Code Review
+
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, labeled]
+
 permissions:
   contents: read
   pull-requests: write
 
 jobs:
-  review:
+  bedrock-ai-code-review:
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'AutoReview' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run AutoReviewer
-        uses: gvasilei/AutoReviewer@0.5.1
+      - name: Run AI Code Review
+        uses: ./
         env:
           NODE_OPTIONS: '--experimental-fetch'
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          BEDROCK_INFERENCE_ARN: ${{ secrets.BEDROCK_INFERENCE_ARN }}
+          BEDROCK_MODEL_ID: ${{ secrets.BEDROCK_MODEL_ID }}
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          openai_api_key: ${{ secrets.OPENAI_API_KEY }}
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_region: ${{ secrets.AWS_REGION }}
-          # Prefer inference profile ARN for Sonnet 4
-          model_name: ${{ secrets.BEDROCK_INFERENCE_PROFILE_ARN }}
           model_temperature: 0
-          # Optional exclusions
+          model_name: 'gpt-4'
           exclude_files: '*.js, *.json, *.md, *.yml, *.js.map, .node-version'
 
