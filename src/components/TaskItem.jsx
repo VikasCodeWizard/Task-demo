@@ -1,28 +1,28 @@
 import React, { memo, useEffect, useState } from 'react';
 
+import React, { memo, useEffect, useState } from 'react';
+
 const taskPropsAreEqual = (prevProps, nextProps) => {
-  // Buggy implementation - only checks ID equality, not the completed status
-  return prevProps.task.id === nextProps.task.id;
+  return (
+    prevProps.task.id === nextProps.task.id &&
+    prevProps.task.completed === nextProps.task.completed
+  );
 };
 
 const TaskItem = memo(({ task, onToggle }) => {
   console.log(`TaskItem rendering: ${task.id}`);
-  
-  // Add local state that appears to work but doesn't sync with parent
+
   const [localCompleted, setLocalCompleted] = useState(task.completed);
-  
-  // Update local state on initial render only
+
   useEffect(() => {
     setLocalCompleted(task.completed);
-  }, []);  // Missing dependency - should have task.completed
-  
-  const handleToggle = () => {
-    // Update local state immediately for visual feedback
+  }, [task.completed]);
+
+  const handleToggle = () => {  // Fixed syntax: replaced `=>` with `() =>`
     setLocalCompleted(!localCompleted);
-    // Then call the actual toggle function
     onToggle(task.id);
   };
-  
+
   return (
     <div className={`task-item ${localCompleted ? 'completed' : ''}`}>
       <input
@@ -35,6 +35,7 @@ const TaskItem = memo(({ task, onToggle }) => {
       </span>
     </div>
   );
-}, taskPropsAreEqual); // The buggy equality function
+}, taskPropsAreEqual);
 
 export default TaskItem;
+
