@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: AI Code Review (Bedrock Claude Sonnet)
-        uses: coding-jr/planto-reviewer@7fa8738792372d2507e099d35403d86d84bfa535
+        uses: coding-jr/planto-reviewer@cc147918a6b28a46e9f04e958b22a3d7f454e4a1
         env:
           NODE_OPTIONS: '--experimental-fetch'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
